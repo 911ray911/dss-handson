@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DSS WSM Gudang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              display: ["DM Serif Display", "serif"],
+              body: ["Manrope", "sans-serif"]
+            },
+            colors: {
+              clay: "#be5d2b",
+              sand: "#f2e7d5",
+              ink: "#1f2430"
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-gradient-to-b from-sand via-amber-50 to-orange-100 text-ink font-body min-h-screen">
+    <div class="mx-auto w-[min(1200px,calc(100%-24px))] py-6 md:py-10 space-y-6">
+      <header class="grid gap-4 md:grid-cols-[1.7fr_1fr] items-end">
+        <div class="space-y-4">
+          <p class="uppercase tracking-[0.2em] text-xs font-extrabold text-clay">Decision Support System</p>
+          <h1 class="font-display text-4xl md:text-6xl leading-tight">Seleksi lokasi gudang dengan metode WSM.</h1>
+          <p class="text-slate-700 leading-relaxed max-w-3xl">
+            Alur belajar disederhanakan menjadi tiga langkah: upload dataset, klik kalkulasi, lalu baca hasil ranking.
+            Dengan flow ini, mahasiswa baru belajar Python lebih cepat memahami urutan proses aplikasi.
+          </p>
+        </div>
+        <div class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 shadow-xl space-y-2">
+          <p class="text-xs uppercase tracking-[0.16em] font-bold text-slate-500">Dataset aktif</p>
+          {% if has_dataset %}
+            <p class="text-lg font-bold">{{ dataset_name }}</p>
+            <p class="text-xs text-slate-500 break-all">{{ dataset_path }}</p>
+          {% else %}
+            <p class="text-lg font-bold text-amber-700">Belum ada dataset</p>
+            <p class="text-xs text-slate-500">Upload file Excel untuk memulai proses kalkulasi.</p>
+          {% endif %}
+        </div>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section class="space-y-3">
+            {% for category, message in messages %}
+              <div class="rounded-2xl border px-4 py-3 text-sm font-medium {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-700{% else %}bg-rose-50 border-rose-200 text-rose-700{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
+
+      <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl">
+        <h2 class="font-display text-3xl">Langkah penggunaan</h2>
+        <div class="grid gap-3 md:grid-cols-3 mt-4">
+          <div class="rounded-2xl border p-4 {{ 'border-emerald-200 bg-emerald-50' if has_dataset else 'border-slate-200 bg-slate-50' }}">
+            <p class="text-xs uppercase tracking-[0.15em] font-bold">Langkah 1</p>
+            <p class="font-bold mt-1">Upload dataset</p>
+          </div>
+          <div class="rounded-2xl border p-4 {{ 'border-emerald-200 bg-emerald-50' if calculation_done else 'border-slate-200 bg-slate-50' }}">
+            <p class="text-xs uppercase tracking-[0.15em] font-bold">Langkah 2</p>
+            <p class="font-bold mt-1">Klik kalkulasi</p>
+          </div>
+          <div class="rounded-2xl border p-4 {{ 'border-emerald-200 bg-emerald-50' if calculation_done else 'border-slate-200 bg-slate-50' }}">
+            <p class="text-xs uppercase tracking-[0.15em] font-bold">Langkah 3</p>
+            <p class="font-bold mt-1">Lihat ranking</p>
+          </div>
+        </div>
+      </section>
+
+      <main class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl space-y-5">
+          <div>
+            <p class="uppercase tracking-[0.16em] text-xs font-bold text-clay">Input utama</p>
+            <h2 class="font-display text-3xl">Kelola dataset dan kalkulasi</h2>
+          </div>
+
+          <form class="space-y-3" method="post" action="{{ url_for('upload_dataset') }}" enctype="multipart/form-data">
+            <h3 class="font-bold">1) Upload dataset Excel</h3>
+            <input
+              type="file"
+              name="dataset"
+              accept=".xlsx,.xlsm,.xltx,.xltm"
+              required
+              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
+            >
+            <button type="submit" class="rounded-full px-4 py-2 bg-clay text-white font-bold hover:brightness-110 transition">
+              Muat dataset
+            </button>
+          </form>
+
+          <form method="post" action="{{ url_for('calculate_results') }}" class="space-y-2">
+            <h3 class="font-bold">2) Jalankan kalkulasi</h3>
+            <p class="text-sm text-slate-600">Hasil ranking baru muncul setelah tombol ini ditekan.</p>
+            <button
+              type="submit"
+              class="rounded-full px-4 py-2 font-bold text-white transition {% if has_dataset %}bg-ink hover:brightness-110{% else %}bg-slate-400 cursor-not-allowed{% endif %}"
+              {% if not has_dataset %}disabled{% endif %}
+            >
+              Kalkulasi WSM
+            </button>
+          </form>
+
+          <form method="post" action="{{ url_for('reset_state') }}">
+            <button type="submit" class="rounded-full px-4 py-2 border border-slate-300 bg-white font-bold hover:bg-slate-100 transition">
+              Reset state
+            </button>
+          </form>
+        </section>
+
+        <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl space-y-4">
+          <div>
+            <p class="uppercase tracking-[0.16em] text-xs font-bold text-clay">Status hasil</p>
+            <h2 class="font-display text-3xl">Ringkasan</h2>
+          </div>
+          {% if error %}
+            <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+              <p class="font-bold">Dataset tidak bisa diproses</p>
+              <p class="text-sm mt-1">{{ error }}</p>
+            </div>
+          {% elif not has_dataset %}
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+              <p class="font-bold">Belum bisa menghitung</p>
+              <p class="text-sm mt-1">Upload dataset dulu untuk mengaktifkan kalkulasi.</p>
+            </div>
+          {% elif not calculation_done %}
+            <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sky-800">
+              <p class="font-bold">Dataset sudah siap</p>
+              <p class="text-sm mt-1">Klik tombol kalkulasi agar ranking dan tabel analisis muncul.</p>
+            </div>
+          {% else %}
+            <div class="space-y-3">
+              {% for item in ranking[:5] %}
+                <article class="rounded-2xl border p-4 flex items-center justify-between {{ 'border-amber-300 bg-amber-50' if loop.first else 'border-slate-200 bg-white' }}">
+                  <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Rank #{{ item.rank }}</p>
+                    <p class="font-bold">{{ item.name }}</p>
+                  </div>
+                  <p class="font-extrabold text-lg">{{ '%.4f'|format(item.score) }}</p>
+                </article>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </section>
+      </main>
+
+      {% if calculation_done and not error %}
+        <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl space-y-5">
+          <div>
+            <p class="uppercase tracking-[0.16em] text-xs font-bold text-clay">Bobot kriteria</p>
+            <h2 class="font-display text-3xl">Override bobot</h2>
+            <p class="text-slate-600 text-sm mt-1">Bobot dinormalisasi otomatis ke total 1 saat disimpan.</p>
+          </div>
+          <form method="post" action="{{ url_for('update_weights') }}" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {% for criterion in criteria %}
+              <label class="space-y-1 text-sm">
+                <span class="font-semibold">{{ criterion.label }}</span>
+                <input
+                  type="number"
+                  name="{{ criterion.key }}"
+                  value="{{ '%.4f'|format(weights[criterion.key]) }}"
+                  step="0.01"
+                  min="0"
+                  required
+                  class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2"
+                >
+              </label>
+            {% endfor %}
+            <div class="sm:col-span-2 lg:col-span-3">
+              <button type="submit" class="rounded-full px-4 py-2 bg-clay text-white font-bold hover:brightness-110 transition">
+                Hitung ulang dengan bobot baru
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl space-y-4">
+          <div>
+            <p class="uppercase tracking-[0.16em] text-xs font-bold text-clay">Data mentah</p>
+            <h2 class="font-display text-3xl">Alternatif dan nilai kriteria</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-[900px] w-full text-sm">
+              <thead>
+                <tr class="text-left border-b border-slate-200">
+                  <th class="p-2 font-bold">Lokasi</th>
+                  {% for criterion in criteria %}
+                    <th class="p-2 font-bold">{{ criterion.label }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for alternative in alternatives %}
+                  <tr class="border-b border-slate-100">
+                    <th class="p-2 text-left">{{ alternative.name }}</th>
+                    {% for criterion in criteria %}
+                      <td class="p-2">{{ alternative['values'][criterion.key] }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 md:p-6 shadow-xl space-y-5">
+          <div>
+            <p class="uppercase tracking-[0.16em] text-xs font-bold text-clay">Penjelasan WSM</p>
+            <h2 class="font-display text-3xl">Normalisasi dan kontribusi</h2>
+            <p class="text-sm text-slate-600 mt-1">Benefit = nilai / nilai maksimum. Cost = nilai minimum / nilai. Skor akhir = jumlah dari normalisasi x bobot.</p>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-2">Matriks normalisasi</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-[900px] w-full text-sm">
+                <thead>
+                  <tr class="text-left border-b border-slate-200">
+                    <th class="p-2 font-bold">Lokasi</th>
+                    {% for criterion in criteria %}
+                      <th class="p-2 font-bold">{{ criterion.key }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in normalized_matrix %}
+                    <tr class="border-b border-slate-100">
+                      <th class="p-2 text-left">{{ row.name }}</th>
+                      {% for criterion in criteria %}
+                        <td class="p-2">{{ '%.4f'|format(row['values'][criterion.key]) }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="font-bold mb-2">Kontribusi berbobot</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-[900px] w-full text-sm">
+                <thead>
+                  <tr class="text-left border-b border-slate-200">
+                    <th class="p-2 font-bold">Lokasi</th>
+                    {% for criterion in criteria %}
+                      <th class="p-2 font-bold">{{ criterion.key }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in contribution_matrix %}
+                    <tr class="border-b border-slate-100">
+                      <th class="p-2 text-left">{{ row.name }}</th>
+                      {% for criterion in criteria %}
+                        <td class="p-2">{{ '%.4f'|format(row['values'][criterion.key]) }}</td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      {% else %}
+        <section class="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <p class="font-bold">Hasil belum tersedia</p>
+          <p class="text-sm mt-1">Upload dataset lalu klik kalkulasi untuk menampilkan ranking dan analisis.</p>
+        </section>
+      {% endif %}
+    </div>
+  </body>
+</html>
