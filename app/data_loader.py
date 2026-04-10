@@ -19,41 +19,41 @@ def load_dataset(file_path: Path) -> dict:
     dan daftar alternatif yang siap dipakai oleh proses WSM.
     """
     try:
-        dataframe = pd.read_excel(file_path)
+        excel_data = pd.read_excel(file_path)
     except Exception as exc:
         raise DataLoadError("Workbook Excel tidak dapat dibaca.") from exc
 
     # Hapus baris yang benar-benar kosong agar tidak ikut diproses.
-    dataframe = dataframe.dropna(how="all")
-    if dataframe.empty:
+    excel_data = excel_data.dropna(how="all")
+    if excel_data.empty:
         raise DataLoadError("Dataset kosong.")
 
     # Pastikan semua kolom yang dibutuhkan aplikasi memang ada di file.
     missing_columns = [
         column
         for column in [ALTERNATIVE_COLUMN, *CRITERIA_METADATA.keys()]
-        if column not in dataframe.columns
+        if column not in excel_data.columns
     ]
     if missing_columns:
-        joined = ", ".join(missing_columns)
-        raise DataLoadError(f"Kolom wajib tidak ditemukan: {joined}.")
+        missing_columns_text = ", ".join(missing_columns)
+        raise DataLoadError(f"Kolom wajib tidak ditemukan: {missing_columns_text}.")
 
     # Ambil hanya kolom yang relevan agar data lebih mudah diolah.
-    working_frame = dataframe[[ALTERNATIVE_COLUMN, *CRITERIA_METADATA.keys()]].copy()
-    working_frame = working_frame.dropna(subset=[ALTERNATIVE_COLUMN])
-    if working_frame.empty:
+    prepared_data = excel_data[[ALTERNATIVE_COLUMN, *CRITERIA_METADATA.keys()]].copy()
+    prepared_data = prepared_data.dropna(subset=[ALTERNATIVE_COLUMN])
+    if prepared_data.empty:
         raise DataLoadError("Tidak ada alternatif yang valid di dalam dataset.")
 
-    criteria = []
+    criteria_list = []
     for column_name, metadata in CRITERIA_METADATA.items():
         # Semua nilai kriteria harus bisa dibaca sebagai angka.
-        numeric_series = pd.to_numeric(working_frame[column_name], errors="coerce")
-        if numeric_series.isna().any():
+        numeric_values = pd.to_numeric(prepared_data[column_name], errors="coerce")
+        if numeric_values.isna().any():
             raise DataLoadError(
                 f"Nilai pada kolom '{column_name}' harus seluruhnya numerik."
             )
-        working_frame[column_name] = numeric_series.astype(float)
-        criteria.append(
+        prepared_data[column_name] = numeric_values.astype(float)
+        criteria_list.append(
             {
                 "label": column_name,
                 "key": metadata["key"],
@@ -61,21 +61,21 @@ def load_dataset(file_path: Path) -> dict:
             }
         )
 
-    alternatives = []
-    for _, row in working_frame.iterrows():
+    alternative_list = []
+    for _, row_data in prepared_data.iterrows():
         # Setiap baris Excel diubah menjadi satu alternatif dengan nilai per kriteria.
-        values = {
-            CRITERIA_METADATA[column]["key"]: float(row[column])
+        criterion_values = {
+            CRITERIA_METADATA[column]["key"]: float(row_data[column])
             for column in CRITERIA_METADATA
         }
-        alternatives.append(
+        alternative_list.append(
             {
-                "name": str(row[ALTERNATIVE_COLUMN]),
-                "values": values,
+                "name": str(row_data[ALTERNATIVE_COLUMN]),
+                "values": criterion_values,
             }
         )
 
     return {
-        "criteria": criteria,
-        "alternatives": alternatives,
+        "criteria": criteria_list,
+        "alternatives": alternative_list,
     }
