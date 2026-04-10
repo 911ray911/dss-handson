@@ -1,11 +1,3 @@
-"""Route handlers for the Flask DSS application.
-
-Flow per request:
-1. Upload dataset.
-2. Click calculate.
-3. Render DSS result.
-"""
-
 from pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
@@ -35,7 +27,9 @@ def register_routes(app: Flask) -> None:
         weights = _resolve_weights()
         calculation_done = bool(session.get("calculation_done", False))
         context = _build_context(dataset_path, weights, calculation_done)
-        return render_template("index.html", **context)
+        # TUGAS: Isi nama file template HTML yang akan ditampilkan.
+        # Petunjuk: lihat folder app/templates/ dan cari nama file yang sesuai.
+        return render_template("???", **context)
 
     @app.post("/weights")
     def update_weights():

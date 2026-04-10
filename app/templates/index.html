@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DSS WSM Gudang</title>
+    <title>DSS WSM — Seleksi Distribution Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -31,10 +31,9 @@
       <header class="grid gap-4 md:grid-cols-[1.7fr_1fr] items-end">
         <div class="space-y-4">
           <p class="uppercase tracking-[0.2em] text-xs font-extrabold text-clay">Decision Support System</p>
-          <h1 class="font-display text-4xl md:text-6xl leading-tight">Seleksi lokasi gudang dengan metode WSM.</h1>
+          <h1 class="font-display text-4xl md:text-6xl leading-tight">Seleksi lokasi distribution center tidak permanen dengan metode WSM.</h1>
           <p class="text-slate-700 leading-relaxed max-w-3xl">
-            Alur belajar disederhanakan menjadi tiga langkah: upload dataset, klik kalkulasi, lalu baca hasil ranking.
-            Dengan flow ini, mahasiswa baru belajar Python lebih cepat memahami urutan proses aplikasi.
+            Sistem pendukung keputusan ini membantu menentukan lokasi terbaik untuk distribution center yang bersifat sementara berdasarkan beberapa kriteria. Alurnya sederhana: upload dataset lokasi kandidat, jalankan kalkulasi, lalu baca hasil rankingnya.
           </p>
         </div>
         <div class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur p-5 shadow-xl space-y-2">
@@ -86,7 +85,8 @@
             <h2 class="font-display text-3xl">Kelola dataset dan kalkulasi</h2>
           </div>
 
-          <form class="space-y-3" method="post" action="{{ url_for('upload_dataset') }}" enctype="multipart/form-data">
+          {# TUGAS: Ganti '???' dengan nama fungsi route yang tepat. Cek file app/route.py untuk melihat daftar route yang tersedia. #}
+          <form class="space-y-3" method="post" action="{{ url_for('???') }}" enctype="multipart/form-data">
             <h3 class="font-bold">1) Upload dataset Excel</h3>
             <input
               type="file"
@@ -100,7 +100,8 @@
             </button>
           </form>
 
-          <form method="post" action="{{ url_for('calculate_results') }}" class="space-y-2">
+          {# TUGAS: Ganti kedua '???' — method HTTP yang tepat (get/post) dan nama fungsi route di app/route.py. #}
+          <form method="???" action="{{ url_for('???') }}" class="space-y-2">
             <h3 class="font-bold">2) Jalankan kalkulasi</h3>
             <p class="text-sm text-slate-600">Hasil ranking baru muncul setelah tombol ini ditekan.</p>
             <button

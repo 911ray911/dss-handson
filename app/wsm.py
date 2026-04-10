@@ -39,7 +39,10 @@ def calculate_wsm(dataset: dict, raw_weights: dict[str, float]) -> dict:
                 criterion["type"],
                 criterion_extrema[criterion_key],
             )
-            weighted_contribution = normalized_value * normalized_weights[criterion_key]
+            # TUGAS: Hitung kontribusi berbobot untuk kriteria ini.
+            # Rumus: nilai_yang_sudah_dinormalisasi * bobot_kriteria_ini
+            # Petunjuk: hasil normalisasi sudah tersimpan di variabel normalized_value
+            weighted_contribution = XXX * normalized_weights[criterion_key]  # ganti XXX
 
             # Kontribusi adalah nilai normalisasi yang sudah dikalikan bobot.
             normalized_row["values"][criterion_key] = normalized_value
@@ -94,9 +97,15 @@ def _normalize_value(value: float, criterion_type: str, extrema: dict[str, float
     minimum dibagi nilai saat ini.
     """
     if criterion_type == "benefit":
+        # TUGAS: Untuk benefit, nilai yang lebih BESAR lebih baik.
+        # Rumus: nilai_saat_ini / nilai_TERBESAR dari semua alternatif
+        # Petunjuk: nilai terbesar tersimpan di extrema["max"]
         denominator = extrema["max"]
-        return 0.0 if denominator == 0 else value / denominator
+        return 0.0 if denominator == 0 else XXX / denominator  # ganti XXX dengan variabel yang tepat
 
-    denominator = value
-    numerator = extrema["min"]
+    # TUGAS: Untuk cost, nilai yang lebih KECIL lebih baik.
+    # Rumus: nilai_TERKECIL dari semua alternatif / nilai_saat_ini
+    # Petunjuk: nilai terkecil tersimpan di extrema["min"], nilai saat ini ada di parameter value
+    denominator = XXX   # ganti XXX: nilai saat ini yang dijadikan pembagi
+    numerator = XXX     # ganti XXX: nilai terkecil dari semua alternatif
     return 0.0 if denominator == 0 else numerator / denominator
